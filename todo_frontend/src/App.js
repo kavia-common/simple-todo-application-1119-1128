@@ -6,6 +6,8 @@ import AppBar from "./components/AppBar";
 import NavBar from "./components/NavBar";
 import TodoList from "./components/TodoList";
 import AddTodoButton from "./components/AddTodoButton";
+import AddTodo from "./components/AddTodo";
+import "./components/AddTodo.css"; // Import AddTodo styles
 
 function App() {
   // Simulate theme feature (leave for future, not used in this screen):
@@ -18,7 +20,7 @@ function App() {
   // Tabs: 'all' or 'completed'
   const [currentTab, setCurrentTab] = useState("all");
 
-  // Placeholder todos modelled after Figma/HTML
+  // Placeholder todos modelled after Figma/HTML. Real app would load from backend.
   const [todos, setTodos] = useState([
     {
       id: 1,
@@ -52,13 +54,16 @@ function App() {
     },
   ]);
 
+  // AddTodo modal state
+  const [showAddTodo, setShowAddTodo] = useState(false);
+
   // Filter todos per tab
   const displayedTodos =
     currentTab === "all"
       ? todos
       : todos.filter((todo) => todo.completed);
 
-  // Action handlers (Demo: just alert)
+  // Handle todo item toggles
   const handleCheck = (id) => {
     setTodos((prev) =>
       prev.map((todo) =>
@@ -70,25 +75,53 @@ function App() {
     setTodos((prev) => prev.filter((todo) => todo.id !== id));
   };
   const handleEdit = (id) => {
-    alert("Edit TODO id " + id); // To be implemented further
+    alert("Edit TODO id " + id); // To be implemented
   };
-  const handleAddTodo = () => {
-    alert("Add ToDo clicked! (Implement modal or navigation for adding TODOs)");
+
+  // Shows the AddTodo "page"/modal
+  const handleShowAddTodo = () => {
+    setShowAddTodo(true);
+  };
+
+  // Handles creation of new todo
+  const handleAddTodo = ({ title, subtitle }) => {
+    setTodos((prev) => [
+      ...prev,
+      {
+        id: prev.length ? Math.max(...prev.map(t => t.id)) + 1 : 1,
+        title,
+        subtitle,
+        completed: false,
+      },
+    ]);
+    setShowAddTodo(false);
+  };
+
+  // Handles cancel from AddTodo "page"
+  const handleCancelAddTodo = () => {
+    setShowAddTodo(false);
   };
 
   return (
-    <div className="todo-page">
-      <StatusBar />
-      <AppBar />
-      <NavBar currentTab={currentTab} onTabChange={setCurrentTab} />
-      <TodoList
-        todos={displayedTodos}
-        onCheck={handleCheck}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
-      />
-      <AddTodoButton onClick={handleAddTodo} />
-    </div>
+    <>
+      {/* If AddTodo is open, show it fullscreen as per design */}
+      {showAddTodo ? (
+        <AddTodo onAdd={handleAddTodo} onCancel={handleCancelAddTodo} />
+      ) : (
+        <div className="todo-page">
+          <StatusBar />
+          <AppBar />
+          <NavBar currentTab={currentTab} onTabChange={setCurrentTab} />
+          <TodoList
+            todos={displayedTodos}
+            onCheck={handleCheck}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+          />
+          <AddTodoButton onClick={handleShowAddTodo} />
+        </div>
+      )}
+    </>
   );
 }
 
